@@ -92,7 +92,7 @@ export function StrokeEditor({ intervals, onChange }: Props) {
                 <span className="w-14 text-sm font-semibold">
                   {agg?.label}
                 </span>
-                <span className="ml-1 rounded-full bg-secondary px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
+                <span className="ml-1 shrink-0 whitespace-nowrap rounded-full bg-secondary px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
                   {rows.length}구간
                 </span>
                 <div className="ml-auto flex items-center gap-3 text-right text-xs">
