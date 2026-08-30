@@ -2,7 +2,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { parseGarminText, SwimSummary } from '../utils/parser';
+import { parseGarminText, SwimSummary } from '@/utils/parser';
 import { Share2, Copy, Heart, Flame } from 'lucide-react';
 
 export default function SwimLogApp() {
