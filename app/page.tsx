@@ -3,7 +3,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { parseGarminText, SwimSummary } from '@/utils/parser';
-import { Share2, Copy, Edit3, Award, Heart, Flame } from 'lucide-react';
+import { Share2, Copy, Heart, Flame } from 'lucide-react';
 
 export default function SwimLogApp() {
   const [rawText, setRawText] = useState('');
@@ -11,7 +11,6 @@ export default function SwimLogApp() {
   const [summary, setSummary] = useState<SwimSummary | null>(null);
   const [activeTab, setActiveTab] = useState<'paste' | 'manual'>('paste');
 
-  // PWA Share Target으로 수신된 URL 처리 (?url=...)
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const params = new URLSearchParams(window.location.search);
@@ -22,7 +21,6 @@ export default function SwimLogApp() {
     }
   }, []);
 
-  // 텍스트 변경 시 파싱 실행
   const handleTextChange = (text: string) => {
     setRawText(text);
     if (text.trim().length > 0) {
@@ -33,7 +31,6 @@ export default function SwimLogApp() {
     }
   };
 
-  // 클립보드 자동 붙여넣기
   const handlePasteClipboard = async () => {
     try {
       const text = await navigator.clipboard.readText();
@@ -43,9 +40,8 @@ export default function SwimLogApp() {
     }
   };
 
-  // 인스타 Web Share API 공유
   const handleShare = async () => {
-    if (navigator.share) {
+    if (typeof window !== 'undefined' && navigator.share) {
       try {
         await navigator.share({
           title: '오늘의 수영 기록 🏊‍♂️',
@@ -62,7 +58,6 @@ export default function SwimLogApp() {
 
   return (
     <main className="min-h-screen bg-slate-950 text-white p-4 max-w-md mx-auto flex flex-col justify-between font-sans">
-      {/* 헤더 */}
       <header className="py-4 border-b border-slate-800 text-center">
         <h1 className="text-xl font-bold tracking-tight text-cyan-400 flex items-center justify-center gap-2">
           🏊 SwimLog Garmin Card
@@ -70,7 +65,6 @@ export default function SwimLogApp() {
         <p className="text-xs text-slate-400 mt-1">가민 기록을 감성 인스타 카드로 변환</p>
       </header>
 
-      {/* 상단: 가민 공유 URL 수신 가이드 */}
       {garminUrl && (
         <section className="my-3 p-3 bg-slate-900 border border-cyan-500/30 rounded-xl text-xs">
           <p className="text-cyan-300 font-semibold mb-1">🔗 수신된 가민 링크:</p>
@@ -81,7 +75,6 @@ export default function SwimLogApp() {
         </section>
       )}
 
-      {/* 탭 전환 (붙여넣기 vs 수동입력) */}
       <div className="flex bg-slate-900 rounded-lg p-1 my-3 border border-slate-800">
         <button
           onClick={() => setActiveTab('paste')}
@@ -97,7 +90,6 @@ export default function SwimLogApp() {
         </button>
       </div>
 
-      {/* 입력 영역 */}
       {activeTab === 'paste' ? (
         <section className="flex-1 my-2">
           <div className="flex justify-between items-center mb-2">
@@ -123,10 +115,8 @@ export default function SwimLogApp() {
         </section>
       )}
 
-      {/* 인스타 카드 결과 영역 */}
       {summary && summary.totalDistance > 0 ? (
         <section className="my-4 bg-gradient-to-br from-slate-900 to-slate-950 border border-cyan-500/40 rounded-2xl p-5 shadow-2xl relative overflow-hidden">
-          {/* 카드 상단 헤더 */}
           <div className="flex justify-between items-end border-b border-slate-800 pb-3 mb-4">
             <div>
               <span className="text-[10px] font-bold tracking-widest text-cyan-400 uppercase">Swim Session</span>
@@ -138,7 +128,6 @@ export default function SwimLogApp() {
             </div>
           </div>
 
-          {/* 주요 요약 지표 (평균 페이스, 심박수) */}
           <div className="grid grid-cols-2 gap-2 mb-4">
             <div className="bg-slate-800/60 p-2.5 rounded-xl border border-slate-800 flex items-center gap-2">
               <Flame className="text-cyan-400" size={18} />
@@ -156,7 +145,6 @@ export default function SwimLogApp() {
             </div>
           </div>
 
-          {/* 영법별 분해 리스트 */}
           <div className="space-y-2">
             <p className="text-[11px] font-semibold text-slate-400 mb-1">영법별 상세 기록</p>
             {Object.entries(summary.byStroke).map(([stroke, data]) => (
@@ -177,7 +165,6 @@ export default function SwimLogApp() {
             ))}
           </div>
 
-          {/* 인스타 카드 푸터 */}
           <div className="mt-5 pt-3 border-t border-slate-800/80 flex justify-between items-center text-[10px] text-slate-500">
             <span>SwimLog Card</span>
             <span>@instagram_share</span>
@@ -189,7 +176,6 @@ export default function SwimLogApp() {
         </div>
       )}
 
-      {/* 인스타 공유 버튼 */}
       <button
         onClick={handleShare}
         disabled={!summary || summary.totalDistance === 0}
