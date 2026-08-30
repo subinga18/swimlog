@@ -5,9 +5,8 @@ import { Waves } from 'lucide-react'
 import { TopSection } from './top-section'
 import { BottomSection } from './bottom-section'
 import { CardSection } from './card-section'
-import type { EditableStroke } from './stroke-editor'
-import type { StrokeStat } from './insta-card'
-import { parseIntervals, formatPace, paceStrToSec } from '@/utils/parser'
+import type { Interval } from './stroke-editor'
+import { parseIntervals, aggregate } from '@/utils/parser'
 
 type Props = {
   initialUrl: string | null
@@ -17,51 +16,27 @@ type Props = {
 
 export function SwimApp({ initialUrl, initialText, initialTitle }: Props) {
   const [rawText, setRawText] = useState(initialText ?? '')
-  const [editable, setEditable] = useState<EditableStroke[]>([])
+  const [intervals, setIntervals] = useState<Interval[]>([])
   const lastSig = useRef<string>('__init__')
 
   const parsed = useMemo(() => parseIntervals(rawText), [rawText])
 
-  // 원문이 바뀌면 파싱 결과로 편집 상태를 리셋한다(수동 수정은 유지되지 않음).
+  // 원문이 바뀌면 파싱된 인터벌로 편집 상태를 리셋한다.
   useEffect(() => {
     if (lastSig.current === rawText) return
     lastSig.current = rawText
-    setEditable(
-      parsed.strokes.map((s) => ({
-        key: s.key,
-        label: s.label,
-        color: s.color,
-        distance: s.distance,
-        paceStr: formatPace(s.paceSec),
-        hr: s.hr,
-      })),
-    )
+    setIntervals(parsed.intervals as Interval[])
   }, [rawText, parsed])
 
-  // 편집 상태 -> 카드용 통계로 변환
+  // 인터벌 -> 영법별 집계 -> 카드용 통계
   const { cardStrokes, totalDistance, totalTimeSec } = useMemo(() => {
-    const list: StrokeStat[] = editable
-      .filter((s) => s.distance > 0)
-      .map((s) => {
-        const paceSec = paceStrToSec(s.paceStr)
-        const timeSec = Math.round((paceSec / 100) * s.distance)
-        return {
-          key: s.key,
-          label: s.label,
-          color: s.color,
-          distance: s.distance,
-          paceSec,
-          timeSec,
-          hr: s.hr,
-          laps: 0,
-        }
-      })
+    const { strokes, totalDistance, totalTimeSec } = aggregate(intervals)
     return {
-      cardStrokes: list,
-      totalDistance: list.reduce((a, s) => a + s.distance, 0),
-      totalTimeSec: list.reduce((a, s) => a + s.timeSec, 0),
+      cardStrokes: strokes.filter((s) => s.distance > 0),
+      totalDistance,
+      totalTimeSec,
     }
-  }, [editable])
+  }, [intervals])
 
   const dateLabel = useMemo(() => {
     const d = new Date()
@@ -89,8 +64,9 @@ export function SwimApp({ initialUrl, initialText, initialTitle }: Props) {
       <BottomSection
         rawText={rawText}
         onRawText={setRawText}
-        strokes={editable}
-        onStrokesChange={setEditable}
+        intervals={intervals}
+        onIntervalsChange={setIntervals}
+        strokes={cardStrokes}
         matched={parsed.matched}
       />
 

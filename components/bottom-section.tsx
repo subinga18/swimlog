@@ -2,24 +2,35 @@
 
 import { useState } from 'react'
 import { ClipboardPaste, ListChecks, SlidersHorizontal, Waves } from 'lucide-react'
-import { StrokeEditor, type EditableStroke } from './stroke-editor'
-import { STROKE_COLOR_HEX } from '@/utils/parser'
+import { StrokeEditor, type Interval } from './stroke-editor'
+import { STROKE_COLOR_HEX, formatPace } from '@/utils/parser'
 
 const HEX: Record<string, string> = STROKE_COLOR_HEX
+
+type SummaryStroke = {
+  key: string
+  label: string
+  color: string
+  distance: number
+  paceSec: number
+  hr: number
+}
 
 type Props = {
   rawText: string
   onRawText: (v: string) => void
-  strokes: EditableStroke[]
-  onStrokesChange: (s: EditableStroke[]) => void
+  intervals: Interval[]
+  onIntervalsChange: (s: Interval[]) => void
+  strokes: SummaryStroke[]
   matched: boolean
 }
 
 export function BottomSection({
   rawText,
   onRawText,
+  intervals,
+  onIntervalsChange,
   strokes,
-  onStrokesChange,
   matched,
 }: Props) {
   const [tab, setTab] = useState<'summary' | 'edit'>('summary')
@@ -122,7 +133,7 @@ export function BottomSection({
         {tab === 'summary' ? (
           <SummaryView strokes={strokes} />
         ) : (
-          <StrokeEditor strokes={strokes} onChange={onStrokesChange} />
+          <StrokeEditor intervals={intervals} onChange={onIntervalsChange} />
         )}
       </div>
     </section>
